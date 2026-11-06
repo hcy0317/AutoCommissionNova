@@ -57,6 +57,8 @@ export function isCancellationError(error) {
     const msg = (error.message || error.toString() || "").toLowerCase();
     return msg.includes("取消自动任务")
         || msg.includes("task was canceled")
+        || msg.includes("operation was canceled")
+        || msg.includes("operation was cancelled")
         || msg.includes("operationcanceledexception")
         || msg.includes("normalendexception")
         || msg.includes("尝试多次后,截图失败!");
@@ -72,7 +74,9 @@ export function isCancellationError(error) {
  * @throws 原 error（当 error 为取消异常时）
  */
 export function rethrowIfCancellation(error) {
-    if (isCancellationError(error)) throw error;
+    // 保留旧入口名；未确认结束战斗同样不能重试/吞掉，但不把它标成用户取消。
+    if (isCancellationError(error)
+        || String(error?.message ?? error).includes("BGI_COMBAT_UNCONFIRMED")) throw error;
 }
 
 /**
